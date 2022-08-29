@@ -1,8 +1,6 @@
-import type { NextPage } from 'next';
-import React, { useEffect } from 'react';
 import GoogleMapReact from 'google-map-react';
-import Head from 'next/head';
-import Image from 'next/image';
+import type { NextPage } from 'next';
+import React from 'react';
 
 const Home: NextPage = () => {
   const defaultProps = {
@@ -14,14 +12,16 @@ const Home: NextPage = () => {
   };
 
   return (
-    <div className='w-[full] h-screen'>
+    <div className='h-screen w-[full]'>
       <GoogleMapReact
         bootstrapURLKeys={{
           key: process.env.NEXT_PUBLIC_GMAPS_API_KEY as string,
         }}
         defaultCenter={defaultProps.center}
         defaultZoom={defaultProps.zoom}
-      ></GoogleMapReact>
+      >
+        <div>Some text</div>
+      </GoogleMapReact>
     </div>
   );
 };
