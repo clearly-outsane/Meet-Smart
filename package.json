@@ -9,14 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next-auth/firebase-adapter": "^1.0.1",
     "@types/google-map-react": "^2.1.7",
     "firebase": "^9.9.3",
     "google-map-react": "^2.2.0",
     "next": "12.2.5",
+    "next-auth": "^4.10.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "sass": "^1.54.5",
-    "scss": "^0.2.4"
+    "scss": "^0.2.4",
+    "zustand": "^4.1.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
