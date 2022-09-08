@@ -29,7 +29,9 @@ const Login = () => {
           </h1>
           <button
             onClick={() =>
-              signIn('google', { callbackUrl: 'http://localhost:3000' })
+              signIn('google', {
+                callbackUrl: process.env.NEXT_PUBLIC_ROOT_DOMAIN,
+              })
             }
             type='button'
             className='mr-2 mb-2 flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-4 text-sm font-[600] text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200'
@@ -39,7 +41,9 @@ const Login = () => {
           </button>
           <button
             onClick={() =>
-              signIn('twitter', { callbackUrl: 'http://localhost:3000' })
+              signIn('twitter', {
+                callbackUrl: process.env.NEXT_PUBLIC_ROOT_DOMAIN,
+              })
             }
             type='button'
             className='mr-2 mb-2 flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-4 text-sm font-[600] text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200'
@@ -52,7 +56,7 @@ const Login = () => {
             onSubmit={() => {
               signIn('email', {
                 email,
-                callbackUrl: 'http://localhost:3000',
+                callbackUrl: process.env.NEXT_PUBLIC_ROOT_DOMAIN,
               });
             }}
           >
@@ -77,7 +81,7 @@ const Login = () => {
               </div>
               <button
                 type='submit'
-                className='mr-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-4 text-center text-sm font-semibold text-white hover:bg-gradient-to-bl focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:focus:ring-cyan-800'
+                className='rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-4 text-center text-sm font-semibold text-white hover:bg-gradient-to-bl focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:focus:ring-cyan-800'
               >
                 Sign in
               </button>
