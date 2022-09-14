@@ -56,7 +56,7 @@ const Login = () => {
             onSubmit={() => {
               signIn('email', {
                 email,
-                callbackUrl: process.env.NEXT_PUBLIC_ROOT_DOMAIN,
+                redirect: false,
               });
             }}
           >
