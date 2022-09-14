@@ -7,7 +7,7 @@ import usePlacesAutocomplete, {
 import Input, { InputProps } from './Input';
 
 type AutocompleteProps = InputProps & {
-  getCoordinates: (coordinates: { lat: string; lng: string }) => void;
+  getCoordinates: (coordinates: { lat: number; lng: number }) => void;
 };
 
 const PlacesAutocomplete = ({
@@ -36,14 +36,14 @@ const PlacesAutocomplete = ({
     clearSuggestions();
   });
 
-  const handleInput = (e) => {
+  const handleInput = (e: any) => {
     // Update the keyword of the input element
     onChange(e.target.value);
     setValue(e.target.value);
   };
 
   const handleSelect =
-    ({ description }) =>
+    ({ description }: { [x: string]: any }) =>
     () => {
       // When user selects a place, we can replace the keyword without request data from API
       // by setting the second parameter to "false"

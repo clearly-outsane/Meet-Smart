@@ -2,7 +2,9 @@ import Image from 'next/image';
 import { signOut } from 'next-auth/react';
 import React, { useState } from 'react';
 
-const Header = ({ session }) => {
+import { ExtendedSession } from '../types/session';
+
+const Header = ({ session }: { session: ExtendedSession | null }) => {
   const [show, setShow] = useState(false);
 
   return (
@@ -14,7 +16,7 @@ const Header = ({ session }) => {
             onClick={() => setShow(true)}
             className='relative grid h-[32px] w-[32px] cursor-pointer place-items-center overflow-hidden rounded-full'
           >
-            {session.user?.image ? (
+            {session?.user?.image ? (
               <Image
                 src={session.user?.image}
                 alt='user image'
@@ -22,7 +24,7 @@ const Header = ({ session }) => {
                 objectFit='cover'
               />
             ) : (
-              session.user?.name ?? 'Account'
+              session?.user?.name ?? 'Account'
             )}
           </span>
           <div

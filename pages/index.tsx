@@ -11,13 +11,17 @@ import { User } from '../components/firebase/api/users/types';
 import GoogleAutocomplete from '../components/GoogleAutocomplete';
 import Header from '../components/Header';
 import Input from '../components/Input';
+import { ExtendedSession } from '../types/session';
 
 const tabLabels = ['meetups', 'invites'];
 
 const Home: NextPage = () => {
   const [tab, setTab] = useState(0);
   const router = useRouter();
-  const { status, data: session } = useSession({
+  const {
+    status,
+    data: session,
+  }: { status: string; data: ExtendedSession | null } = useSession({
     required: true,
     onUnauthenticated() {
       router.push('/login');
@@ -87,15 +91,15 @@ const Home: NextPage = () => {
         dateCreated: new Date(),
         participants: [
           {
-            uid: session.user?.id,
-            image: session.user?.image ?? '',
-            name: session.user?.name ?? '',
+            uid: session?.user?.id as string,
+            image: session?.user?.image ?? '',
+            name: session?.user?.name ?? '',
             address: { ...coordinates },
           },
         ],
       });
       const updateFields: User = {
-        uid: session.user?.id,
+        uid: session?.user?.id as string,
         meetups: [meetupDocRef],
       };
       await updateUser(updateFields);
@@ -187,7 +191,7 @@ const Home: NextPage = () => {
                         placeholder='Where are you traveling from?'
                         error={errors?.address?.message ?? null}
                         getCoordinates={({ lat, lng }) =>
-                          setCoordinates({ lat, lng })
+                          setCoordinates({ lat: String(lat), lng: String(lng) })
                         }
                       />
                     );
