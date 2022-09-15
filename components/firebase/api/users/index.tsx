@@ -1,13 +1,8 @@
 /* eslint-disable no-console */
-import {
-  arrayUnion,
-  doc,
-  DocumentReference,
-  getDoc,
-  updateDoc,
-} from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import { User } from './types';
+import { meetupId } from '../meetups/types';
 import { db } from '../../index';
 
 export const updateUser = async (fieldsToUpdate: User) => {
@@ -17,11 +12,16 @@ export const updateUser = async (fieldsToUpdate: User) => {
 
     const docSnap = await getDoc(docRef);
 
+    //if the user exists
     if (docSnap.exists()) {
+      /**
+       * if the meetups array exists, do a union
+       * else create a new array property
+       */
       if (docSnap.data().meetups) {
         await updateDoc(docRef, {
           ...body,
-          meetups: arrayUnion(...(body.meetups as DocumentReference[])),
+          meetups: arrayUnion(...(body.meetups as meetupId[])),
         });
       } else
         await updateDoc(docRef, {

@@ -1,23 +1,17 @@
-import { DocumentReference } from 'firebase/firestore';
-
+import { userId } from './../users/types';
 export type Participant = {
-  ref: DocumentReference;
-  uid: string;
   image: string;
   name: string;
   address: { lat: string; lng: string };
 };
 
+export type meetupId = string;
+
 export type MeetupType = {
+  id?: string;
   title: string;
-  organiserRef: DocumentReference;
+  organiserId: userId;
   dateCreated: Date;
   date?: Date;
-  participants: Participant[];
-};
-
-export type newMeetupType = {
-  [key in keyof MeetupType]: key extends 'participants'
-    ? Omit<Participant, 'ref'>[]
-    : MeetupType[key];
+  participants: { [id: string]: Participant };
 };

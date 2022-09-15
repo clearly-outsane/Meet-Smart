@@ -11,6 +11,7 @@ import { User } from '../components/firebase/api/users/types';
 import GoogleAutocomplete from '../components/GoogleAutocomplete';
 import Header from '../components/Header';
 import Input from '../components/Input';
+import LoadingIcon from '../public/svgs/loading.svg';
 import { ExtendedSession } from '../types/session';
 
 const tabLabels = ['meetups', 'invites'];
@@ -21,13 +22,14 @@ const Home: NextPage = () => {
   const {
     status,
     data: session,
-  }: { status: string; data: ExtendedSession | null } = useSession({
-    required: true,
-    onUnauthenticated() {
-      router.push('/login');
-      // The user is not authenticated, handle it here.
-    },
-  });
+  }: { status: 'loading' | 'authenticated'; data: ExtendedSession | null } =
+    useSession({
+      required: true,
+      onUnauthenticated() {
+        router.push('/login');
+        // The user is not authenticated, handle it here.
+      },
+    });
 
   if (status === 'loading') {
     return (
@@ -73,6 +75,7 @@ const Home: NextPage = () => {
 
   const CreateMeetup = () => {
     const [visible, setVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [coordinates, setCoordinates] = useState<{
       lat: string;
       lng: string;
@@ -86,23 +89,26 @@ const Home: NextPage = () => {
     });
 
     const createMeetup = async (data: FieldValues) => {
+      setLoading(true);
       const meetupDocRef = await addMeetup({
+        organiserId: session?.user?.id as string,
         title: data.title,
         dateCreated: new Date(),
-        participants: [
-          {
-            uid: session?.user?.id as string,
+        participants: {
+          [session?.user?.id as string]: {
             image: session?.user?.image ?? '',
             name: session?.user?.name ?? '',
             address: { ...coordinates },
           },
-        ],
+        },
       });
       const updateFields: User = {
         uid: session?.user?.id as string,
-        meetups: [meetupDocRef],
+        meetups: [meetupDocRef.id as string],
       };
       await updateUser(updateFields);
+      setLoading(false);
+      router.push(`/meetups/${meetupDocRef.id}`);
     };
 
     return (
@@ -116,7 +122,7 @@ const Home: NextPage = () => {
               <div className='mb-4 grid h-10 w-10 place-items-center rounded-full bg-white '>
                 <AiOutlinePlus />
               </div>
-              <span> Create Meetup</span>
+              <span>Create Meetup</span>
             </div>
           </div>
         </button>
@@ -202,7 +208,16 @@ const Home: NextPage = () => {
                 type='submit'
                 className='rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-4 text-center text-sm font-semibold text-white hover:bg-gradient-to-bl focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:focus:ring-cyan-800'
               >
-                Create Meetup
+                {loading ? (
+                  <div className='inline-flex items-center'>
+                    <div className='mr-2 animate-spin'>
+                      <LoadingIcon />
+                    </div>
+                    Loading...
+                  </div>
+                ) : (
+                  'Create Meetup'
+                )}
               </button>
             </form>
           </div>
