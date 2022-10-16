@@ -24,6 +24,7 @@ const nextConfig = {
     domains: ['lh3.googleusercontent.com', 'maps.googleapis.com'],
   },
   eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreDuringBuilds: true },
 };
 
 module.exports = nextConfig;
