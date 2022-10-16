@@ -23,6 +23,7 @@ const nextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com', 'maps.googleapis.com'],
   },
+  eslint: { ignoreDuringBuilds: true },
 };
 
 module.exports = nextConfig;
