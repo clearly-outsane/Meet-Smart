@@ -1,9 +1,33 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { FirestoreAdapter } from '@next-auth/firebase-adapter';
+import admin from 'firebase-admin';
 import NextAuth, { Session } from 'next-auth';
 import EmailProvider from 'next-auth/providers/email';
 import GoogleProvider from 'next-auth/providers/google';
 import TwitterProvider from 'next-auth/providers/twitter';
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      type: process.env.FIREBASE_ADMIN_CONFIG_type,
+      project_id: process.env.FIREBASE_ADMIN_CONFIG_project_id,
+      private_key_id: process.env.FIREBASE_ADMIN_CONFIG_private_key_id,
+      private_key: process.env.FIREBASE_ADMIN_CONFIG_private_key?.replace(
+        /\\n/gm,
+        '\n'
+      ), // https://github.com/gladly-team/next-firebase-auth/discussions/95#discussioncomment-473663
+      client_email: process.env.FIREBASE_ADMIN_CONFIG_client_email,
+      client_id: process.env.FIREBASE_ADMIN_CONFIG_client_id,
+      auth_uri: process.env.FIREBASE_ADMIN_CONFIG_auth_uri,
+      token_uri: process.env.FIREBASE_ADMIN_CONFIG_token_uri,
+      auth_provider_x509_cert_url:
+        process.env.FIREBASE_ADMIN_CONFIG_auth_provider_x509_cert_url,
+      client_x509_cert_url:
+        process.env.FIREBASE_ADMIN_CONFIG_client_x509_cert_url,
+    }),
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_REALTIME_DATABASE_URL,
+  });
+}
 
 export default NextAuth({
   // Configure one or more authentication providers
@@ -39,12 +63,16 @@ export default NextAuth({
   }),
   callbacks: {
     async session({ session, user, token }) {
+      const customToken =
+        token?.customToken ??
+        (await admin.auth().createCustomToken(user.id, {}));
       session = {
         ...session,
         user: {
           id: user.id,
           ...session.user,
         },
+        customToken,
       } as Session & {
         user?: {
           name?: string | null;
@@ -52,11 +80,16 @@ export default NextAuth({
           image?: string | null;
           id?: string;
         };
+        customToken: string;
       };
+
       return session;
     },
     async jwt({ token, user, account, profile, isNewUser }) {
-      // console.log('jwt', user, token, account, profile);
+      if (isNewUser || user) {
+        const customToken = await admin.auth().createCustomToken(token.sub, {});
+        token.customToken = customToken;
+      }
       return token;
     },
   },

@@ -2,7 +2,7 @@ import { userId } from './../users/types';
 export type Participant = {
   image: string;
   name: string;
-  address: { lat: string; lng: string };
+  coordinates: { lat: string; lng: string };
 };
 
 export type meetupId = string;

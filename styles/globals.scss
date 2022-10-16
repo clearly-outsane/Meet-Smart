@@ -8,6 +8,7 @@ body {
   margin: 0;
   font-family: -apple-system, 'Poppins', BlinkMacSystemFont, Segoe UI, Roboto,
     Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  height: 100%;
 }
 
 * {
@@ -31,4 +32,15 @@ body {
   h2 {
     @apply text-xl;
   }
+}
+
+#__next {
+  height: 100%;
+}
+
+.swiper-container {
+  // CSS Grid/Flexbox bug size workaround
+  // @see https://github.com/kenwheeler/slick/issues/982
+  min-height: 0;
+  min-width: 0;
 }

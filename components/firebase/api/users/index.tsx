@@ -1,5 +1,13 @@
 /* eslint-disable no-console */
-import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
+import {
+  arrayUnion,
+  doc,
+  DocumentData,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
 import { User } from './types';
 import { meetupId } from '../meetups/types';
@@ -34,4 +42,43 @@ export const updateUser = async (fieldsToUpdate: User) => {
     console.log('HERE', uid, body);
     console.error('Error adding document: ', e);
   }
+};
+
+export const getUserFromId = async (
+  uid: string | undefined
+): Promise<DocumentData | undefined> => {
+  if (uid)
+    try {
+      const docRef = doc(db, 'users', uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return docSnap.data();
+      } else return undefined;
+    } catch (e) {
+      console.log(e);
+    }
+  else return undefined;
+};
+
+export const useOnUserSnapshot = (
+  uid: string | undefined
+): DocumentData | undefined => {
+  const [user, setUser] = useState<DocumentData>();
+  useEffect(() => {
+    const unsub = uid
+      ? onSnapshot(
+          doc(db, 'users', uid),
+          (doc) => {
+            setUser(doc.data());
+          },
+          (error) => console.log(error)
+        )
+      : () => console.log('no uid');
+
+    return () => {
+      unsub();
+    };
+  }, [uid]);
+
+  return user;
 };

@@ -1,17 +1,31 @@
+import { getAuth, signOut as firebaseSignOut } from 'firebase/auth';
 import Image from 'next/image';
 import { signOut } from 'next-auth/react';
 import React, { useState } from 'react';
 
 import { ExtendedSession } from '../types/session';
 
-const Header = ({ session }: { session: ExtendedSession | null }) => {
+type HeaderProps = {
+  session: ExtendedSession | null;
+  packed?: boolean;
+  right?: React.ReactNode;
+};
+
+const Header = ({ session, packed = false, right }: HeaderProps) => {
   const [show, setShow] = useState(false);
 
   return (
-    <div className=' w-full bg-transparent'>
-      <div className='container relative mx-auto flex items-center justify-between py-14 px-4 lg:px-0'>
+    <div
+      className={`fixed z-10 w-full ${packed ? 'bg-white' : 'bg-transparent'}`}
+    >
+      <div
+        className={`${
+          packed ? 'mx-6 py-6' : 'container py-14'
+        } relative mx-auto flex items-center justify-between px-4 lg:px-0`}
+      >
         <span>Meet Smart</span>
-        <div className='relative'>
+        <div className='relative flex items-center gap-4'>
+          {right}
           <span
             onClick={() => setShow(true)}
             className='relative grid h-[32px] w-[32px] cursor-pointer place-items-center overflow-hidden rounded-full'
@@ -33,7 +47,14 @@ const Header = ({ session }: { session: ExtendedSession | null }) => {
             } absolute right-0 top-12 z-[2] flex min-w-[120px] flex-col rounded-lg bg-[#FBFBFB] [&>*]:px-2 [&>*]:py-2`}
           >
             <a className='text-gray-400'>Account</a>
-            <button className='text-left' onClick={() => signOut()}>
+            <button
+              className='text-left'
+              onClick={async () => {
+                signOut();
+                const auth = getAuth();
+                await firebaseSignOut(auth);
+              }}
+            >
               Sign out
             </button>
           </div>

@@ -1,23 +1,32 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import type { NextPage } from 'next';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import React, { useState } from 'react';
 import { Controller, FieldValues, useForm } from 'react-hook-form';
 import { AiOutlinePlus } from 'react-icons/ai';
 
-import { addMeetup } from '../components/firebase/api/meetups';
-import { updateUser } from '../components/firebase/api/users';
+import { addMeetup, getMeetupFromId } from '../components/firebase/api/meetups';
+import { MeetupType } from '../components/firebase/api/meetups/types';
+import {
+  getUserFromId,
+  updateUser,
+  useOnUserSnapshot,
+} from '../components/firebase/api/users';
 import { User } from '../components/firebase/api/users/types';
 import GoogleAutocomplete from '../components/GoogleAutocomplete';
 import Header from '../components/Header';
 import Input from '../components/Input';
 import LoadingIcon from '../public/svgs/loading.svg';
+import useBoundStore from '../store';
 import { ExtendedSession } from '../types/session';
 
 const tabLabels = ['meetups', 'invites'];
 
 const Home: NextPage = () => {
   const [tab, setTab] = useState(0);
+  const userState = useBoundStore();
   const router = useRouter();
   const {
     status,
@@ -30,6 +39,26 @@ const Home: NextPage = () => {
         // The user is not authenticated, handle it here.
       },
     });
+  const changedUser = useOnUserSnapshot(session?.user?.id ?? undefined);
+  React.useEffect(() => {
+    const populateUserState = async () => {
+      if (changedUser) {
+        const meetups = await Promise.all(
+          changedUser.meetups.map(async (meetupId: string, _: any) => {
+            const meetupFromId = await getMeetupFromId(meetupId);
+            const organiser = await getUserFromId(meetupFromId?.organiserId);
+            return { ...meetupFromId, organiser, id: meetupId };
+          })
+        );
+
+        userState.updateUser({ ...changedUser, meetups });
+      }
+    };
+    populateUserState();
+    return () => {
+      userState.signOut();
+    };
+  }, [changedUser]);
 
   if (status === 'loading') {
     return (
@@ -39,34 +68,69 @@ const Home: NextPage = () => {
     );
   }
 
-  const EventCard = () => {
+  const EventCard = ({
+    meetup,
+    organiser,
+  }: {
+    meetup: MeetupType;
+    organiser: User;
+  }) => {
     return (
-      <div className='group relative w-full cursor-pointer sm:aspect-square sm:w-[240px]'>
+      <div
+        onClick={() => router.push('/meetups/' + meetup.id)}
+        className='group relative w-full cursor-pointer sm:aspect-square sm:w-[240px]'
+      >
         <div className='absolute -inset-1 rounded-lg bg-gradient-to-r from-[#8CD4FF] to-[#E49FFB] opacity-0 blur transition duration-300 group-hover:opacity-25'></div>
-        <div className='relative flex h-full w-full flex-col rounded-xl bg-[#FEFEFE] p-6'>
-          <div className='mb-4 flex items-center'>
-            <div className='h-8 w-8 overflow-hidden rounded-full bg-yellow-200'></div>
-            <div className='ml-2 flex flex-col'>
-              <span className='text-sm font-semibold'>Vinay S</span>
-              <span className='text-xs'>Organiser</span>
+        <div className='relative flex h-full w-full flex-col justify-between rounded-xl bg-[#FEFEFE] p-6'>
+          <div>
+            <div className='mb-4 flex items-center'>
+              <div className='relative h-8 w-8 overflow-hidden rounded-full bg-yellow-200'>
+                {organiser.image && (
+                  <Image
+                    alt='organiser pic'
+                    src={organiser.image}
+                    layout='fill'
+                    objectFit='cover'
+                  />
+                )}
+              </div>
+              <div className='ml-2 flex flex-col'>
+                <span className='text-sm font-semibold'>{organiser.name}</span>
+                <span className='text-xs'>Organiser</span>
+              </div>
             </div>
+            <span className=' text-lg font-semibold line-clamp-2'>
+              {meetup.title}
+            </span>
           </div>
-          <span className=' text-lg font-semibold line-clamp-2'>
-            Friday game night with the bois
-          </span>
           <div className='mt-12 flex items-center justify-between'>
             <div className='flex -space-x-4'>
-              <div className=' h-8 w-8 rounded-full border-2 border-white bg-yellow-300'></div>
-              <div className=' h-8 w-8 rounded-full border-2 border-white bg-blue-300'></div>
-              <div className=' h-8 w-8 rounded-full border-2 border-white bg-pink-300'></div>
-              <a
-                className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-blue-50 text-xs font-medium  hover:bg-gray-200'
-                href='#'
-              >
-                +2
-              </a>
+              {Object.keys(meetup.participants)
+                .slice(0, 3)
+                .map((participantId, i) => (
+                  <div
+                    key={i}
+                    className=' relative h-8 w-8 overflow-hidden rounded-full border-2 border-white bg-yellow-300'
+                  >
+                    <Image
+                      alt={meetup.participants[participantId].name + ' img'}
+                      src={meetup.participants[participantId].image}
+                      layout='fill'
+                      objectFit='cover'
+                    />
+                  </div>
+                ))}
+
+              {Object.keys(meetup.participants).length > 3 && (
+                <a
+                  className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-blue-50 text-xs font-medium  hover:bg-gray-200'
+                  href='#'
+                >
+                  +{Object.keys(meetup.participants).length - 3}
+                </a>
+              )}
             </div>
-            <span className='text-sm text-gray-400'>Tomorrow</span>
+            <span className='text-sm text-gray-400'>TBD</span>
           </div>
         </div>
       </div>
@@ -98,7 +162,7 @@ const Home: NextPage = () => {
           [session?.user?.id as string]: {
             image: session?.user?.image ?? '',
             name: session?.user?.name ?? '',
-            address: { ...coordinates },
+            coordinates: { ...coordinates },
           },
         },
       });
@@ -245,7 +309,9 @@ const Home: NextPage = () => {
         </div>
         <div className='flex w-full flex-wrap gap-8'>
           <CreateMeetup />
-          <EventCard /> <EventCard />
+          {userState.meetups?.map((meetup, i) => (
+            <EventCard organiser={meetup.organiser} meetup={meetup} key={i} />
+          ))}
         </div>
       </div>
     </div>

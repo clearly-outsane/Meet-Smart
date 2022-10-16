@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app';
+import { getDatabase } from 'firebase/database';
 import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
@@ -11,9 +12,11 @@ const firebaseConfig = {
   messagingSenderId: '277756892625',
   appId: '1:277756892625:web:9758c0e665da605bf43cf0',
   measurementId: 'G-T5MKNY6Q6K',
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_REALTIME_DATABASE_URL,
 };
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 // export const analytics = getAnalytics(app);
 export const db = getFirestore(app);
+export const realtimeDb = getDatabase(app);
