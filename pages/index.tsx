@@ -293,7 +293,7 @@ const Home: NextPage = () => {
   return (
     <div className='flex min-h-screen w-[full] flex-col items-center bg-[#FBFBFB] [background-image:radial-gradient(at_150%_83%,_hsla(285,100%,87%,0.5)_0px,_transparent_50%),radial-gradient(at_80%_54%,_hsla(203,100%,86%,0.5)_0px,_transparent_70%)]'>
       <Header session={session} />
-      <div className='container mx-auto grid items-center px-4 lg:px-0'>
+      <div className='container mx-auto mt-36 grid items-center px-4 lg:px-0'>
         <div className='flex gap-12 py-8'>
           {tabLabels.map((tabLabel, i) => (
             <button onClick={() => setTab(i)} key={i}>
